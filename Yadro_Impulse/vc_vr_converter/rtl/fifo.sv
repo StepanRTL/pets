@@ -6,7 +6,7 @@ module fifo #(parameter WIDTH = 8, DEPTH = 10)(
   input  [WIDTH - 1:0] data_i,
   output [WIDTH - 1:0] data_o,
   output               empty_o,
-  output               full_o,
+  output               full_o
 );
 
   localparam WIDTH_PTR = $clog2(DEPTH);
