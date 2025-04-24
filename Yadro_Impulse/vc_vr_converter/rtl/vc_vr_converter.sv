@@ -38,9 +38,9 @@ module vc_vr_converter #(
 
 
   always_ff @(posedge clk)
-    if (~rst_n)
+    if (~rst_n) begin
       num_of_credits <= CREDIT_NUM;
-
+    end
 
   always_ff @(posedge clk)
     if (~rst_n)
@@ -48,11 +48,6 @@ module vc_vr_converter #(
     else if (cnt < num_of_credits)
       cnt <= cnt + 'b1;
 
-  assign s_credit_o = ~s_valid_i && pop || (cnt < num_of_credits);
-
-
-
-
-
+  assign s_credit_o = rst_n ? ~s_valid_i && pop || (cnt < num_of_credits) : 1'b0;
 
 endmodule
