@@ -21,36 +21,30 @@ module reorder_buffer #( parameter DATA_WIDTH = 8) (
   output logic                  m_rready_o
 );
 
-  logic                     push1;
-  logic                     push2;
-  logic                     m_handshake;
-  logic                     pop1;
-  logic                     pop2;
-  logic                     full1;
-  logic                     full2;
-  logic [3:0]               compare_id1;
-  logic [3:0]               compare_id2;
-  logic [DATA_WIDTH + 3: 0] data_for_fifo2;
-  logic [DATA_WIDTH + 3: 0] data_from_fifo2;
-  logic [DATA_WIDTH + 3: 0] data_for_fifo2_ff;
-  logic                     same_id1;
-  logic                     same_id2;
+  logic       push1;
+  logic       pop1;
+  logic       empty_fifo1;
+  logic       empty_fifo2;
+  logic [3:0] compare_id1;
+  logic       id_match;
 
-  assign m_handshake    = m_arvalid_o && m_arready_i;
-  assign pop1           = m_handshake && same_id1;
-  assign push1          = s_arvalid_i && s_arready_o;
-  assign push2          = m_handshake && ~same_id1;
-  assign pop2           = same_id2;
+  assign id_match = compare_id1 == m_rid_i;
 
-  assign data_for_fifo2 = {m_rdata_i, m_rid_i};
-  assign compare_id2    = data_from_fifo2[3:0];
+  always_ff @(posedge clk) begin
+    if (~rst_n) begin
+      s_rvalid_o <= 1'b0;
+      s_rdata_o  <= 'b0;
+      s_rid_o    <= 'b0;
+    end
+    else if (id_match && ~empty_fifo1) begin
+      s_rvalid_o <= m_rvalid_i;
+      s_rid_o    <= m_rid_i;
+      s_rdata_o  <= m_rdata_i;
+    end
+  end
 
-  always_ff @(posedge clk)
-    if (~rst_n)
-      data_for_fifo2_ff <= 'b0;
-    else
-      data_for_fifo2_ff <= data_for_fifo2;
 
+  assign push1 = s_arvalid_i && s_arready_o;
   show_ahead_fifo #(.WIDTH(4), .DEPTH(16)) show_ahead_fifo_for_id
   (
     .clk_i  (clk        ),
@@ -59,7 +53,7 @@ module reorder_buffer #( parameter DATA_WIDTH = 8) (
     .pop_i  (pop1       ),
     .data_i (s_arid_i   ),
     .data_o (compare_id1),
-    .empty_o(           ),
+    .empty_o(empty_fifo1),
     .full_o (full1      )
   );
 
@@ -71,19 +65,12 @@ module reorder_buffer #( parameter DATA_WIDTH = 8) (
     .pop_i  (pop2             ),
     .data_i (data_for_fifo2_ff),
     .data_o (data_from_fifo2  ),
-    .empty_o(                 ),
+    .empty_o(empty_fifo2      ),
     .full_o (full2            )
   );
 
+  assign m_arid_o    = s_arid_i;
+  assign m_arvalid_o = s_arvalid_i;
+  assign m_rready_o  = m_rid_i == compare_id1;
 
-  assign m_arid_o     = s_arid_i;
-  assign m_arvalid_o  = s_arvalid_i;
-
-  assign s_arready_o  = ~full1;                              // while show_ahead_for_id isn`t full, it can accept new id
-  assign m_rready_o   = ~full2;                              // while show_ahead_for_id_and_data isn`t full, it can accept new data with id
-  assign s_rvalid_o   = pop2;                                // the signal indicates a situation when show_ahead_for_id_and_data bring new data
-  assign s_rid_o      = same_id1 ? m_rid_i : compare_id2;                         // output id
-  assign s_rdata_o    = same_id1 ? data_for_fifo2_ff : data_from_fifo2[DATA_WIDTH + 3 : 4]; // output data
-  assign same_id1     = compare_id1 == m_rid_i;
-  assign same_id2     = compare_id1 == compare_id2;
 endmodule
