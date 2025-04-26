@@ -68,7 +68,7 @@ module reorder_buffer #( parameter DATA_WIDTH = 8) (
 
   always_ff @(posedge clk)
     if (~id_match1 && m_r_handshake)
-      ram_for_data[m_rid_i][DATA_WIDTH + 3 : 0] <= data_to_ram;
+      ram_for_data[m_rid_i] <= data_to_ram;
 
   always_comb  begin
     if (id_match2 && s_r_handshake) begin
