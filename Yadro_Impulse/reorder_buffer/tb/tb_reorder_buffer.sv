@@ -39,69 +39,7 @@ module tb_reorder_buffer();
     .m_rready_o (m_rready_o )
   );   
 
-  initial begin
-    tb_clk <= 1'b0;
-    forever begin
-      #5;
-      tb_clk <= ~tb_clk;
-    end
-  end
-
-  initial begin
-    tb_rstn <= 1'b0;
-    @(posedge tb_clk);
-    tb_rstn <= 1'b1;
-    m_arready_i <= 1'b1;
-    m_rvalid_i  <= 1'b0;
-    s_rready_i  <= 1'b1;
-    //@(posedge tb_clk);
-    //s_arvalid_i <= 1'b1;
-    //s_arid_i    <= 4'h1;
-    //@(posedge tb_clk);
-    //s_arvalid_i <= 1'b0;
-    //s_arid_i    <= 4'h0;
-    //@(posedge tb_clk);
-    //@(posedge tb_clk);
-    //s_arvalid_i <= 1'b1;
-    //s_arid_i    <= 4'h2;
-    //@(posedge tb_clk);
-    //s_arvalid_i <= 1'b0;
-    //s_arid_i    <= 4'h0;
-    //@(posedge tb_clk);
-    //@(posedge tb_clk);
-    //@(posedge tb_clk);
-    //s_arvalid_i <= 1'b1;
-    //s_arid_i    <= 4'h3;  
-    //@(posedge tb_clk);  
-    //s_arvalid_i <= 1'b0;
-    //s_arid_i    <= 4'h0;
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b1;
-    //m_rdata_i   <= $urandom;
-    //m_rid_i     <= 4'h2;
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b0;
-    //m_rdata_i   <= 'b0;
-    //m_rid_i     <= 4'h0;
-    //@(posedge tb_clk);
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b1;
-    //m_rdata_i   <= $urandom;
-    //m_rid_i     <= 4'h1;
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b0;
-    //m_rdata_i   <= 'b0;
-    //m_rid_i     <= 4'h0;
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b1;
-    //m_rdata_i   <= $urandom;
-    //m_rid_i     <= 4'h3;
-    //@(posedge tb_clk);
-    //m_rvalid_i  <= 1'b0;
-    //m_rdata_i   <= 'b0;
-    //m_rid_i     <= 4'h0;
-    //@(posedge tb_clk);
-
+  task full_load(); 
     for (int i = 0; i < 16; i++) begin
       s_arid_i    <= i;
       s_arvalid_i <= 1'b1;
@@ -119,8 +57,94 @@ module tb_reorder_buffer();
       m_rvalid_i  <= 1'b0;
       m_rdata_i   <= 'b0;
       m_rid_i     <= 4'b0;
-      repeat ($urandom_range(1, 4)) @(posedge tb_clk);
+      //repeat ($urandom_range(1, 4)) @(posedge tb_clk);
+      @(posedge tb_clk);
     end
+  endtask
+
+  task check_random_value();
+    s_arvalid_i <= 1'b1;
+    s_arid_i    <= 4'h6;   // id = 6
+    @(posedge tb_clk);
+    s_arvalid_i <= 1'b0;
+    s_arid_i    <= 4'h0;
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    s_arvalid_i <= 1'b1;
+    s_arid_i    <= 4'h2;   // id = 2
+    @(posedge tb_clk);
+    s_arvalid_i <= 1'b0;
+    s_arid_i    <= 4'h0;
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    s_arvalid_i <= 1'b1;
+    s_arid_i    <= 4'h3;  // id = 3
+    @(posedge tb_clk);  
+    s_arvalid_i <= 1'b0;
+    s_arid_i    <= 4'h0;
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    s_arvalid_i <= 1'b1;
+    s_arid_i    <= 4'h9;   // id = 9
+    @(posedge tb_clk);  
+    s_arvalid_i <= 1'b0;
+    s_arid_i    <= 4'h0;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b1;
+    m_rdata_i   <= $urandom;
+    m_rid_i     <= 4'h2;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b0;
+    m_rdata_i   <= 'b0;
+    m_rid_i     <= 4'h0;
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b1;
+    m_rdata_i   <= $urandom;
+    m_rid_i     <= 4'h9;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b0;
+    m_rdata_i   <= 'b0;
+    m_rid_i     <= 4'h0;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b1;
+    m_rdata_i   <= $urandom;
+    m_rid_i     <= 4'h6;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b0;
+    m_rdata_i   <= 'b0;
+    m_rid_i     <= 4'h0;
+    @(posedge tb_clk);
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b1;
+    m_rdata_i   <= $urandom;
+    m_rid_i     <= 4'h3;
+    @(posedge tb_clk);
+    m_rvalid_i  <= 1'b0;
+    m_rdata_i   <= 'b0;
+    m_rid_i     <= 4'h0;
+    @(posedge tb_clk);
+  endtask
+
+  initial begin
+    tb_clk <= 1'b0;
+    forever begin
+      #5;
+      tb_clk <= ~tb_clk;
+    end
+  end
+
+  initial begin
+    tb_rstn <= 1'b0;
+    @(posedge tb_clk);
+    tb_rstn <= 1'b1;
+    m_arready_i <= 1'b1;
+    m_rvalid_i  <= 1'b0;
+    s_rready_i  <= 1'b1;
+    check_random_value();
+    full_load();
     repeat (3) @(posedge tb_clk);
     s_rready_i <= 1'b0;
     @(posedge tb_clk);
