@@ -71,7 +71,7 @@ assign pop = ~empty_fifo && (id_match1 || id_match2) && s_rready_i ? 1'b1 : 1'b0
 
 ## Пример работы
 
-<img src = "img/example_wave.PNG" weight = 1000>  
+<img src = "img/example_wave.PNG" weight = 1300>  
 
  * AR Slave Interface — розовый цвет
  * R Slave Interface — фиолетовый цвет
