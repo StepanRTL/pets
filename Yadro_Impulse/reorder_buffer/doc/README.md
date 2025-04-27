@@ -67,4 +67,15 @@ assign pop = ~empty_fifo && (id_match1 || id_match2) && s_rready_i ? 1'b1 : 1'b0
 
 ## Схема разрабатываемого устройства
 
-<img src = "img/reorder buffer.png" height = 700>
+<img src = "img/reorder buffer.png" weight = 800>  
+
+## Пример работы
+
+<img src = "img/example_wave.png" weight = 1000>  
+
+ * AR Slave Interface — розовый цвет
+ * R Slave Interface — фиолетовый цвет
+ * AR Master Interface — серый цвет
+ * R Master Interface — оранжевый цвет
+
+
