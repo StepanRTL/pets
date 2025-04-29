@@ -1,4 +1,6 @@
 module kogge_stone #(parameter DATA_WIDTH = 8) (
+  input  logic                    clk_i,
+  input  logic                    aresetn_i,
   input  logic [DATA_WIDTH - 1:0] a_i,
   input  logic [DATA_WIDTH - 1:0] b_i,
   input  logic                    c_i,
@@ -11,9 +13,32 @@ module kogge_stone #(parameter DATA_WIDTH = 8) (
   logic [DATA_WIDTH - 1:0] g_value [STAGES : 0];
   logic [DATA_WIDTH - 1:0] p_value [STAGES : 0];
   logic [DATA_WIDTH : 0]   carry;
+  logic [DATA_WIDTH - 1:0] a_ff;
+  logic [DATA_WIDTH - 1:0] b_ff;
+  logic                    carry_in_ff;
+  logic                    carry_out_ff;
+  logic [DATA_WIDTH - 1:0] sum_ff;
 
-  assign g_value[0] = a_i & b_i;
-  assign p_value[0] = a_i | b_i;
+  always_ff @(posedge clk_i or negedge aresetn_i)
+    if (~aresetn_i)
+      a_ff <= '{DATA_WIDTH{1'b0}};
+    else
+      a_ff <= a_i;
+
+  always_ff @(posedge clk_i or negedge aresetn_i)
+    if (~aresetn_i)
+      b_ff <= '{DATA_WIDTH{1'b0}};
+    else
+      b_ff <= b_i;
+
+  always_ff @(posedge clk_i or negedge aresetn_i)
+    if (~aresetn_i)
+      carry_in_ff <= 1'b0;
+    else
+      carry_in_ff <= c_i;
+
+  assign g_value[0] = a_ff & b_ff;
+  assign p_value[0] = a_ff | b_ff;
 
   generate
     genvar i;
@@ -39,7 +64,7 @@ module kogge_stone #(parameter DATA_WIDTH = 8) (
     end
   endgenerate
 
-  assign carry[0] = c_i;
+  assign carry[0] = carry_in_ff;
 
   generate
     for (genvar k = 0; k < DATA_WIDTH; k++) begin
@@ -47,19 +72,32 @@ module kogge_stone #(parameter DATA_WIDTH = 8) (
     end
   endgenerate
 
-  assign c_o = carry[DATA_WIDTH];
+  assign carry_out_ff = carry[DATA_WIDTH];
 
   generate
     genvar m;
     for (m = 0; m < DATA_WIDTH; m++) begin
       fulladder add_inst
       (
-        .a_i     (a_i[m]  ),
-        .b_i     (b_i[m]  ),
-        .carry_i (carry[m]),
-        .sum_o   (sum_o[m]),
-        .carry_o (        )
+        .a_i     (a_i[m]   ),
+        .b_i     (b_i[m]   ),
+        .carry_i (carry[m] ),
+        .sum_o   (sum_ff[m]),
+        .carry_o (         )
       );
     end
   endgenerate
+
+  always_ff @(posedge clk_i or negedge aresetn_i)
+    if (~aresetn_i)
+      c_o <= 1'b0;
+    else
+      c_o <= carry_out_ff;
+
+  always_ff @(posedge clk_i or negedge aresetn_i)
+    if (~aresetn_i)
+      sum_o <= {DATA_WIDTH{1'b0}};
+    else
+      sum_o <= sum_ff;
+
 endmodule
